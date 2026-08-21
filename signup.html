@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إنشاء حساب — إسناد الجزيرة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --navy:      #0B1F3A;
+      --navy-deep: #07182D;
+      --navy-mid:  #0D2545;
+      --gold:      #C79A3B;
+      --gold-light:#D7B45A;
+      --white:     #FFFFFF;
+      --off-white: #F7F6F2;
+      --mid-text:  #8A9BAE;
+      --border:    rgba(255,255,255,0.07);
+      --error:     #E55050;
+      --success:   #3DAA6C;
+      --font-ar: 'Tajawal', sans-serif;
+      --font-en: 'Inter', sans-serif;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-ar);
+      background: var(--navy-deep);
+      color: var(--white);
+      min-height: 100vh;
+      direction: rtl;
+      -webkit-font-smoothing: antialiased;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    img { display: block; max-width: 100%; }
+    a   { text-decoration: none; color: inherit; }
+    button { font-family: var(--font-ar); cursor: pointer; border: none; }
+
+    /* ── LEFT PANEL (image) ── */
+    .panel-image {
+      position: relative;
+      overflow: hidden;
+      background: var(--navy);
+    }
+    .panel-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.5;
+    }
+    .panel-image-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(7,24,45,0.97) 0%, rgba(11,31,58,0.65) 100%);
+    }
+    .panel-image-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px;
+    }
+    .panel-logo {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 12px rgba(199,154,59,0.3));
+    }
+    .panel-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .panel-stat-label {
+      font-family: var(--font-en);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+    }
+    .stat-row {
+      display: flex;
+      gap: 40px;
+    }
+    .stat-item strong {
+      display: block;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-item span {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+      margin-top: 4px;
+      display: block;
+    }
+    .panel-tagline {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.04em;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .panel-corner-tl, .panel-corner-br {
+      position: absolute;
+      width: 36px; height: 36px;
+    }
+    .panel-corner-tl {
+      top: 48px; left: 48px;
+      border-top: 1px solid rgba(199,154,59,0.4);
+      border-left: 1px solid rgba(199,154,59,0.4);
+    }
+    .panel-corner-br {
+      bottom: 48px; right: 48px;
+      border-bottom: 1px solid rgba(199,154,59,0.4);
+      border-right: 1px solid rgba(199,154,59,0.4);
+    }
+
+    /* ── RIGHT PANEL (form) ── */
+    .panel-form {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 56px 72px;
+      background: var(--navy-deep);
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .form-wrap {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .form-header {
+      margin-bottom: 40px;
+    }
+    .form-en-label {
+      font-family: var(--font-en);
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .form-en-label::before {
+      content: '';
+      display: inline-block;
+      width: 32px; height: 1px;
+      background: var(--gold);
+    }
+    .form-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    .form-subtitle {
+      font-size: 0.88rem;
+      color: var(--mid-text);
+      line-height: 1.6;
+    }
+    .form-subtitle a {
+      color: var(--gold);
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .form-subtitle a:hover { color: var(--gold-light); }
+
+    /* Fields */
+    .form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      position: relative;
+    }
+    .field label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.03em;
+    }
+    .field-input-wrap { position: relative; }
+    .field-icon {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+    .field input {
+      font-family: var(--font-ar);
+      font-size: 0.92rem;
+      color: var(--white);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 13px 42px 13px 13px;
+      width: 100%;
+      direction: rtl;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      -webkit-appearance: none;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.18); }
+    .field input:focus {
+      border-color: var(--gold);
+      background: rgba(199,154,59,0.05);
+      box-shadow: 0 0 0 3px rgba(199,154,59,0.08);
+    }
+    .field input.error { border-color: var(--error); }
+
+    /* Password strength */
+    .pw-strength {
+      margin-top: 8px;
+      display: none;
+    }
+    .pw-strength.show { display: block; }
+    .pw-bars {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 5px;
+    }
+    .pw-bar {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      transition: background 0.3s;
+    }
+    .pw-bar.weak   { background: #E55050; }
+    .pw-bar.medium { background: #E5A23B; }
+    .pw-bar.strong { background: #3DAA6C; }
+    .pw-label {
+      font-size: 0.72rem;
+      color: var(--mid-text);
+    }
+
+    /* Toggle password */
+    .toggle-pw {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,255,255,0.25);
+      font-size: 0.85rem;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+    .toggle-pw:hover { color: var(--gold); }
+
+    /* Terms */
+    .terms {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 26px;
+      font-size: 0.82rem;
+      color: var(--mid-text);
+      line-height: 1.5;
+      cursor: pointer;
+      user-select: none;
+    }
+    .terms input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 2px;
+      cursor: pointer;
+    }
+    .terms a { color: var(--gold); }
+
+    /* Submit */
+    .btn-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: var(--font-ar);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      background: var(--gold);
+      padding: 15px 32px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
+    }
+    .btn-submit:hover:not(:disabled) {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(199,154,59,0.35);
+    }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-submit .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(7,24,45,0.3);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .btn-submit.loading .btn-text { display: none; }
+    .btn-submit.loading .spinner   { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Alert */
+    .form-alert {
+      display: none;
+      margin-top: 18px;
+      padding: 14px 16px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.5;
+      border-right: 3px solid;
+    }
+    .form-alert.error   { background: rgba(229,80,80,0.1);  color: #f08080; border-color: var(--error); }
+    .form-alert.success { background: rgba(61,170,108,0.1); color: #7cd4a4; border-color: var(--success); }
+    .form-alert.show    { display: block; }
+
+    /* Back link */
+    .back-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 28px;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.22);
+      transition: color 0.25s;
+    }
+    .back-link:hover { color: rgba(255,255,255,0.55); }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      body { grid-template-columns: 1fr; }
+      .panel-image { display: none; }
+      .panel-form { padding: 48px 28px; min-height: 100vh; }
+    }
+    @media (max-width: 480px) {
+      .panel-form { padding: 36px 18px; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+
+    /* Animations */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: fadeUp 0.65s var(--ease) forwards;
+    }
+    @keyframes fadeUp { to { opacity: 1; transform: none; } }
+    .fade-up:nth-child(1) { animation-delay: 0.05s; }
+    .fade-up:nth-child(2) { animation-delay: 0.11s; }
+    .fade-up:nth-child(3) { animation-delay: 0.17s; }
+    .fade-up:nth-child(4) { animation-delay: 0.23s; }
+    .fade-up:nth-child(5) { animation-delay: 0.29s; }
+    .fade-up:nth-child(6) { animation-delay: 0.35s; }
+    .fade-up:nth-child(7) { animation-delay: 0.41s; }
+    .fade-up:nth-child(8) { animation-delay: 0.47s; }
+  </style>
+</head>
+<body>
+
+  <!-- ── IMAGE PANEL ── -->
+  <div class="panel-image">
+    <img src="proj10.jpeg" alt="مشاريع إسناد الجزيرة" loading="eager">
+    <div class="panel-image-overlay"></div>
+    <div class="panel-corner-tl"></div>
+    <div class="panel-corner-br"></div>
+    <div class="panel-image-content">
+      <img src="logo.png" alt="إسناد الجزيرة للمقاولات" class="panel-logo">
+      <div class="panel-stats">
+        <div class="panel-stat-label" dir="ltr">OUR ACHIEVEMENTS</div>
+        <div class="stat-row">
+          <div class="stat-item">
+            <strong>50+</strong>
+            <span>مشروع منجز</span>
+          </div>
+          <div class="stat-item">
+            <strong>5+</strong>
+            <span>سنوات خبرة</span>
+          </div>
+          <div class="stat-item">
+            <strong>100%</strong>
+            <span>رضا العملاء</span>
+          </div>
+        </div>
+        <p class="panel-tagline">إسناد الجزيرة للمقاولات العامة — الرياض، المملكة العربية السعودية</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FORM PANEL ── -->
+  <div class="panel-form">
+    <div class="form-wrap">
+
+      <div class="form-header fade-up">
+        <div class="form-en-label" dir="ltr">CREATE ACCOUNT</div>
+        <h1 class="form-title">إنشاء حساب جديد</h1>
+        <p class="form-subtitle">
+          لديك حساب بالفعل؟
+          <a href="login.html">سجّل دخولك</a>
+        </p>
+      </div>
+
+      <form id="signupForm" novalidate>
+        <div class="form-fields">
+
+          <div class="field-row fade-up">
+            <div class="field">
+              <label for="firstName">الاسم الأول</label>
+              <div class="field-input-wrap">
+                <span class="field-icon">👤</span>
+                <input type="text" id="firstName" name="firstName" placeholder="محمد" autocomplete="given-name" required>
+              </div>
+            </div>
+            <div class="field">
+              <label for="lastName">اسم العائلة</label>
+              <div class="field-input-wrap">
+                <input type="text" id="lastName" name="lastName" placeholder="العتيبي" autocomplete="family-name" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="field fade-up">
+            <label for="email">البريد الإلكتروني</label>
+            <div class="field-input-wrap">
+              <span class="field-icon">✉</span>
+              <input type="email" id="email" name="email" placeholder="example@email.com" dir="ltr" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="field fade-up">
+            <label for="phone">رقم الجوال</label>
+            <div class="field-input-wrap">
+              <span class="field-icon">📞</span>
+              <input type="tel" id="phone" name="phone" placeholder="05XXXXXXXX" dir="ltr" autocomplete="tel">
+            </div>
+          </div>
+
+          <div class="field fade-up">
+            <label for="password">كلمة المرور</label>
+            <div class="field-input-wrap">
+              <span class="field-icon">🔒</span>
+              <input type="password" id="password" name="password" placeholder="••••••••" dir="ltr" autocomplete="new-password" required oninput="checkStrength(this.value)">
+              <button type="button" class="toggle-pw" onclick="togglePw('password', this)" aria-label="إظهار/إخفاء">👁</button>
+            </div>
+            <div class="pw-strength" id="pwStrength">
+              <div class="pw-bars">
+                <div class="pw-bar" id="bar1"></div>
+                <div class="pw-bar" id="bar2"></div>
+                <div class="pw-bar" id="bar3"></div>
+                <div class="pw-bar" id="bar4"></div>
+              </div>
+              <span class="pw-label" id="pwLabel">أدخل كلمة مرور</span>
+            </div>
+          </div>
+
+          <div class="field fade-up">
+            <label for="confirmPassword">تأكيد كلمة المرور</label>
+            <div class="field-input-wrap">
+              <span class="field-icon">🔑</span>
+              <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" dir="ltr" autocomplete="new-password" required>
+              <button type="button" class="toggle-pw" onclick="togglePw('confirmPassword', this)" aria-label="إظهار/إخفاء">👁</button>
+            </div>
+          </div>
+
+        </div>
+
+        <label class="terms fade-up">
+          <input type="checkbox" id="agreeTerms" required>
+          أوافق على <a href="#" onclick="return false">شروط الاستخدام</a> وسياسة الخصوصية
+        </label>
+
+        <button type="submit" class="btn-submit fade-up" id="signupBtn">
+          <span class="btn-text">إنشاء الحساب</span>
+          <div class="spinner"></div>
+        </button>
+
+        <div class="form-alert" id="signupAlert"></div>
+      </form>
+
+      <a href="index.html" class="back-link fade-up">
+        ← العودة للموقع
+      </a>
+
+    </div>
+  </div>
+
+  <script>
+    // ══════════════════════════════════════════
+    //  SUPABASE CONFIG  ← ضع بياناتك هنا
+    // ══════════════════════════════════════════
+    const SUPABASE_URL  = 'https://gkjdeoybjqgbgqpeoybe.supabase.co';
+    const SUPABASE_ANON = 'sb_publishable_fEE8vnakS9A5tfc-ToxELg_Kj4to47F';
+    // ══════════════════════════════════════════
+
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Password visibility
+    function togglePw(id, btn) {
+      const inp = document.getElementById(id);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+    }
+
+    // Password strength
+    function checkStrength(pw) {
+      const el = document.getElementById('pwStrength');
+      const lb = document.getElementById('pwLabel');
+      const bars = ['bar1','bar2','bar3','bar4'].map(id => document.getElementById(id));
+      el.classList.toggle('show', pw.length > 0);
+      bars.forEach(b => { b.className = 'pw-bar'; });
+      if (!pw) return;
+      let score = 0;
+      if (pw.length >= 8)                          score++;
+      if (/[A-Z]/.test(pw) || /[a-z]/.test(pw))  score++;
+      if (/[0-9]/.test(pw))                        score++;
+      if (/[^A-Za-z0-9]/.test(pw))                score++;
+      const map   = ['weak','weak','medium','strong'];
+      const labels= ['ضعيفة جداً','ضعيفة','متوسطة','قوية'];
+      for (let i = 0; i < score; i++) bars[i].classList.add(map[score-1]);
+      lb.textContent = 'قوة كلمة المرور: ' + labels[score-1];
+    }
+
+    // Alert helper
+    function showAlert(id, msg, type) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.className = 'form-alert ' + type + ' show';
+    }
+    function clearAlert(id) {
+      document.getElementById(id).className = 'form-alert';
+    }
+
+    // Check existing session
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) window.location.href = 'index.html';
+    })();
+
+    // Submit
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert('signupAlert');
+
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName  = document.getElementById('lastName').value.trim();
+      const email     = document.getElementById('email').value.trim();
+      const phone     = document.getElementById('phone').value.trim();
+      const password  = document.getElementById('password').value;
+      const confirm   = document.getElementById('confirmPassword').value;
+      const agreed    = document.getElementById('agreeTerms').checked;
+      const btn       = document.getElementById('signupBtn');
+
+      // Validation
+      if (!firstName || !lastName || !email || !password) {
+        showAlert('signupAlert', 'يرجى تعبئة جميع الحقول المطلوبة', 'error');
+        return;
+      }
+      if (password.length < 8) {
+        showAlert('signupAlert', 'كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error');
+        return;
+      }
+      if (password !== confirm) {
+        showAlert('signupAlert', 'كلمتا المرور غير متطابقتين', 'error');
+        return;
+      }
+      if (!agreed) {
+        showAlert('signupAlert', 'يرجى الموافقة على شروط الاستخدام', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: firstName + ' ' + lastName,
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone || null,
+          }
+        }
+      });
+
+      btn.disabled = false;
+      btn.classList.remove('loading');
+
+      if (error) {
+        const msgs = {
+          'User already registered':        'هذا البريد الإلكتروني مسجل مسبقاً',
+          'Password should be at least 6 characters': 'كلمة المرور قصيرة جداً',
+          'Unable to validate email address: invalid format': 'صيغة البريد الإلكتروني غير صحيحة',
+        };
+        showAlert('signupAlert', msgs[error.message] || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');
+        return;
+      }
+
+      showAlert(
+        'signupAlert',
+        '✓ تم إنشاء حسابك! تحقق من بريدك الإلكتروني لتأكيد الحساب.',
+        'success'
+      );
+
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 3000);
+    });
+  </script>
+
+</body>
+</html>

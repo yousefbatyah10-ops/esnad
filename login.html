@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول — إسناد الجزيرة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --navy:      #0B1F3A;
+      --navy-deep: #07182D;
+      --navy-mid:  #0D2545;
+      --gold:      #C79A3B;
+      --gold-light:#D7B45A;
+      --white:     #FFFFFF;
+      --off-white: #F7F6F2;
+      --mid-text:  #8A9BAE;
+      --border:    rgba(255,255,255,0.07);
+      --error:     #E55050;
+      --success:   #3DAA6C;
+      --font-ar: 'Tajawal', sans-serif;
+      --font-en: 'Inter', sans-serif;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-ar);
+      background: var(--navy-deep);
+      color: var(--white);
+      min-height: 100vh;
+      direction: rtl;
+      -webkit-font-smoothing: antialiased;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    img { display: block; max-width: 100%; }
+    a   { text-decoration: none; color: inherit; }
+    button { font-family: var(--font-ar); cursor: pointer; border: none; }
+
+    /* ── LEFT PANEL (image) ── */
+    .panel-image {
+      position: relative;
+      overflow: hidden;
+      background: var(--navy);
+    }
+    .panel-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.55;
+    }
+    .panel-image-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(7,24,45,0.95) 0%,
+        rgba(11,31,58,0.6) 100%
+      );
+    }
+    .panel-image-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px;
+    }
+    .panel-logo {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 12px rgba(199,154,59,0.3));
+    }
+    .panel-quote {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel-quote-line {
+      width: 40px;
+      height: 1px;
+      background: var(--gold);
+    }
+    .panel-quote h2 {
+      font-size: clamp(2rem, 3vw, 3rem);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--white);
+    }
+    .panel-quote h2 em {
+      font-style: normal;
+      color: var(--gold);
+    }
+    .panel-quote p {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.75;
+      max-width: 360px;
+    }
+    .panel-corner-tl, .panel-corner-br {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+    }
+    .panel-corner-tl {
+      top: 48px; left: 48px;
+      border-top: 1px solid rgba(199,154,59,0.4);
+      border-left: 1px solid rgba(199,154,59,0.4);
+    }
+    .panel-corner-br {
+      bottom: 48px; right: 48px;
+      border-bottom: 1px solid rgba(199,154,59,0.4);
+      border-right: 1px solid rgba(199,154,59,0.4);
+    }
+
+    /* ── RIGHT PANEL (form) ── */
+    .panel-form {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 64px 72px;
+      background: var(--navy-deep);
+      position: relative;
+      overflow: hidden;
+    }
+    .panel-form::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 1px; height: 100%;
+      background: linear-gradient(to bottom, transparent, rgba(199,154,59,0.2), transparent);
+    }
+
+    .form-wrap {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* Header */
+    .form-header {
+      margin-bottom: 48px;
+    }
+    .form-en-label {
+      font-family: var(--font-en);
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .form-en-label::before {
+      content: '';
+      display: inline-block;
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+    }
+    .form-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    .form-subtitle {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--mid-text);
+      line-height: 1.65;
+    }
+    .form-subtitle a {
+      color: var(--gold);
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .form-subtitle a:hover { color: var(--gold-light); }
+
+    /* Fields */
+    .form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    .field label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    }
+    .field-input-wrap {
+      position: relative;
+    }
+    .field-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .field input {
+      font-family: var(--font-ar);
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--white);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      padding: 14px 44px 14px 14px;
+      width: 100%;
+      direction: rtl;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      -webkit-appearance: none;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.2); }
+    .field input:focus {
+      border-color: var(--gold);
+      background: rgba(199,154,59,0.05);
+      box-shadow: 0 0 0 3px rgba(199,154,59,0.08);
+    }
+    .field input.error { border-color: var(--error); }
+    .field-error-msg {
+      font-size: 0.76rem;
+      color: var(--error);
+      display: none;
+    }
+    .field input.error + .field-error-msg,
+    .field.has-error .field-error-msg { display: block; }
+
+    /* Toggle password */
+    .toggle-pw {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.85rem;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+    .toggle-pw:hover { color: var(--gold); }
+
+    /* Remember + forgot */
+    .form-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.84rem;
+      color: var(--mid-text);
+      user-select: none;
+    }
+    .remember input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+    .forgot-link {
+      font-size: 0.84rem;
+      color: var(--gold);
+      transition: color 0.2s;
+    }
+    .forgot-link:hover { color: var(--gold-light); }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: var(--font-ar);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      background: var(--gold);
+      padding: 15px 32px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-submit:hover:not(:disabled) {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(199,154,59,0.35);
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-submit .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(7,24,45,0.3);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .btn-submit.loading .btn-text { display: none; }
+    .btn-submit.loading .spinner   { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Alert message */
+    .form-alert {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 16px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.5;
+      border-right: 3px solid;
+      direction: rtl;
+    }
+    .form-alert.error   { background: rgba(229,80,80,0.1);   color: #f08080; border-color: var(--error); }
+    .form-alert.success { background: rgba(61,170,108,0.1);  color: #7cd4a4; border-color: var(--success); }
+    .form-alert.show    { display: block; }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .divider span {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.2);
+      white-space: nowrap;
+    }
+
+    /* Back to site link */
+    .back-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 32px;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.25);
+      transition: color 0.25s;
+    }
+    .back-link:hover { color: rgba(255,255,255,0.6); }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      body { grid-template-columns: 1fr; }
+      .panel-image { display: none; }
+      .panel-form { padding: 48px 32px; min-height: 100vh; }
+      .panel-form::before { display: none; }
+    }
+    @media (max-width: 480px) {
+      .panel-form { padding: 36px 20px; }
+      .form-title { font-size: 1.8rem; }
+    }
+
+    /* Reveal animation */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.7s var(--ease) forwards;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: none; }
+    }
+    .fade-up:nth-child(1) { animation-delay: 0.05s; }
+    .fade-up:nth-child(2) { animation-delay: 0.12s; }
+    .fade-up:nth-child(3) { animation-delay: 0.19s; }
+    .fade-up:nth-child(4) { animation-delay: 0.26s; }
+    .fade-up:nth-child(5) { animation-delay: 0.33s; }
+    .fade-up:nth-child(6) { animation-delay: 0.40s; }
+    .fade-up:nth-child(7) { animation-delay: 0.47s; }
+  </style>
+</head>
+<body>
+
+  <!-- ── IMAGE PANEL ── -->
+  <div class="panel-image">
+    <img src="proj11.jpeg" alt="مشاريع إسناد الجزيرة" loading="eager">
+    <div class="panel-image-overlay"></div>
+    <div class="panel-corner-tl"></div>
+    <div class="panel-corner-br"></div>
+    <div class="panel-image-content">
+      <img src="logo.png" alt="إسناد الجزيرة للمقاولات" class="panel-logo">
+      <div class="panel-quote">
+        <div class="panel-quote-line"></div>
+        <h2>نبني ما<br>يستحق أن <em>يبقى</em></h2>
+        <p>إسناد الجزيرة للمقاولات العامة — شركة سعودية متخصصة في تنفيذ المشاريع السكنية والتجارية بأعلى معايير الجودة.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FORM PANEL ── -->
+  <div class="panel-form">
+    <div class="form-wrap">
+
+      <div class="form-header fade-up">
+        <div class="form-en-label" dir="ltr">SIGN IN</div>
+        <h1 class="form-title">مرحباً بك</h1>
+        <p class="form-subtitle">
+          ليس لديك حساب؟
+          <a href="signup.html">أنشئ حساباً الآن</a>
+        </p>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-fields">
+
+          <div class="field fade-up">
+            <label for="email">البريد الإلكتروني</label>
+            <div class="field-input-wrap">
+              <span class="field-icon">✉</span>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="example@email.com"
+                dir="ltr"
+                autocomplete="email"
+                required
+              >
+            </div>
+          </div>
+
+          <div class="field fade-up">
+            <label for="password">كلمة المرور</label>
+            <div class="field-input-wrap">
+              <span class="field-icon">🔒</span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                dir="ltr"
+                autocomplete="current-password"
+                required
+              >
+              <button type="button" class="toggle-pw" onclick="togglePw('password', this)" aria-label="إظهار/إخفاء كلمة المرور">
+                👁
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-meta fade-up">
+          <label class="remember">
+            <input type="checkbox" id="remember" name="remember">
+            تذكرني
+          </label>
+          <a href="#" class="forgot-link">نسيت كلمة المرور؟</a>
+        </div>
+
+        <button type="submit" class="btn-submit fade-up" id="loginBtn">
+          <span class="btn-text">تسجيل الدخول</span>
+          <div class="spinner"></div>
+        </button>
+
+        <div class="form-alert" id="loginAlert"></div>
+      </form>
+
+      <a href="index.html" class="back-link fade-up">
+        ← العودة للموقع
+      </a>
+
+    </div>
+  </div>
+
+  <script>
+    // ══════════════════════════════════════════
+    //  SUPABASE CONFIG  ← ضع بياناتك هنا
+    // ══════════════════════════════════════════
+    const SUPABASE_URL    = 'https://gkjdeoybjqgbgqpeoybe.supabase.co';
+    const SUPABASE_ANON   = 'sb_publishable_fEE8vnakS9A5tfc-ToxELg_Kj4to47F';
+    // ══════════════════════════════════════════
+
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Toggle password visibility
+    function togglePw(id, btn) {
+      const inp = document.getElementById(id);
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        inp.type = 'password';
+        btn.textContent = '👁';
+      }
+    }
+
+    // Alert helper
+    function showAlert(msg, type) {
+      const el = document.getElementById('loginAlert');
+      el.textContent = msg;
+      el.className = 'form-alert ' + type + ' show';
+    }
+
+    function clearAlert() {
+      const el = document.getElementById('loginAlert');
+      el.className = 'form-alert';
+    }
+
+    // Check if already logged in (Admin vs Client redirect)
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        if (session.user.email === 'info@esnadaljazeera.com') {
+          window.location.href = 'dashboard.html';
+        } else {
+          window.location.href = 'index.html';
+        }
+      }
+    })();
+
+    // Submit handler
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert();
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn      = document.getElementById('loginBtn');
+
+      if (!email || !password) {
+        showAlert('يرجى تعبئة جميع الحقول', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+      btn.disabled = false;
+      btn.classList.remove('loading');
+
+      if (error) {
+        const msgs = {
+          'Invalid login credentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+          'Email not confirmed':       'يرجى تأكيد بريدك الإلكتروني أولاً',
+          'Too many requests':         'محاولات كثيرة، يرجى الانتظار قليلاً',
+        };
+        showAlert(msgs[error.message] || 'حدث خطأ، يرجى المحاولة مرة أخرى', 'error');
+        return;
+      }
+
+      showAlert('✓ تم تسجيل الدخول بنجاح، جاري التحويل...', 'success');
+      const targetPage = email === 'info@esnadaljazeera.com' ? 'dashboard.html' : 'index.html';
+      setTimeout(() => { window.location.href = targetPage; }, 1200);
+    });
+  </script>
+
+</body>
+</html>

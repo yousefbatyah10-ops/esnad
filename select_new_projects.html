@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منتقي صور المشاريع الجديدة — إسناد الجزيرة</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark:    #070F1E;
+      --bg-card:    rgba(15, 23, 42, 0.6);
+      --gold:       #C79A3B;
+      --gold-light: #DDC07E;
+      --white:      #FFFFFF;
+      --text-muted: #74889E;
+      --border:     rgba(199, 154, 59, 0.15);
+      --font-ar: 'Tajawal', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-ar);
+      background: var(--bg-dark);
+      color: #E2E8F0;
+      padding: 40px;
+      direction: rtl;
+    }
+    .header {
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .header h1 { font-size: 2rem; font-weight: 800; color: var(--white); }
+    .header h1 span { color: var(--gold); }
+    .header p { color: var(--text-muted); margin-top: 8px; font-size: 0.95rem; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .media-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .media-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--gold);
+      box-shadow: 0 8px 24px rgba(199,154,59,0.15);
+    }
+    .media-card.selected {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(199,154,59,0.3);
+    }
+    .media-card img, .media-card video {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+    }
+    .card-info {
+      padding: 12px;
+      font-size: 0.85rem;
+      background: rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-name { font-weight: 700; color: var(--white); font-family: 'Inter', sans-serif; }
+    
+    .select-indicator {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; color: transparent;
+      transition: all 0.2s;
+    }
+    .media-card.selected .select-indicator {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--bg-dark);
+    }
+
+    /* Selection panel */
+    .selection-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      position: sticky; top: 40px;
+      height: fit-content;
+    }
+    .panel-title { font-size: 1.15rem; font-weight: 800; color: var(--gold-light); margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
+    
+    .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
+    .form-group input, .form-group select, .form-group textarea {
+      font-family: var(--font-ar);
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 6px;
+      color: var(--white);
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+    
+    .btn-action {
+      background: var(--gold);
+      color: var(--bg-dark);
+      font-weight: 800;
+      font-family: var(--font-ar);
+      padding: 12px;
+      border: none; border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+    .btn-action:hover { background: var(--gold-light); transform: translateY(-2px); }
+
+    .code-output {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Inter', monospace;
+      font-size: 0.8rem;
+      color: #7cd4a4;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 240px;
+      overflow-y: auto;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1>مُنتقي ومعاينة <span>صور المشاريع الجديدة</span></h1>
+    <p>تصفح الـ 22 صورة والـ 1 فيديو الجديدة التي أضفتها، واختر منها لإنشاء وتجهيز كود مشاريعك البرمجي لإضافته للموقع فوراً.</p>
+  </header>
+
+  <div class="container">
+    
+    <!-- Gallery Grid -->
+    <div>
+      <div class="gallery-grid" id="galleryGrid">
+        <!-- Render 22 images dynamically -->
+      </div>
+    </div>
+
+    <!-- Right Selection Configurator -->
+    <div class="selection-panel">
+      <div class="panel-title">توليد بيانات المشروع المختار</div>
+      
+      <div class="form-group">
+        <label>الصور المختارة (انقر على الصور من اليمين لتحديدها):</label>
+        <input type="text" id="selectedCount" readonly value="لم يتم اختيار أي صورة" style="color: var(--gold); font-weight:700;">
+      </div>
+
+      <div class="form-group">
+        <label for="pTitle">اسم/عنوان المشروع:</label>
+        <input type="text" id="pTitle" placeholder="مثال: فلل العزيزية السكنية">
+      </div>
+
+      <div class="form-group">
+        <label for="pType">نوع المشروع (التصنيف):</label>
+        <select id="pType">
+          <option value="residential">سكني (Residential)</option>
+          <option value="commercial">تجاري (Commercial)</option>
+          <option value="finishing">تشطيب وترميم (Finishing)</option>
+          <option value="other">أعمال أخرى (Other)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="pStatus">حالة المشروع حالياً:</label>
+        <select id="pStatus">
+          <option value="منجز">منجز بالكامل (Completed)</option>
+          <option value="قيد التنفيذ">قيد التنفيذ والإنشاء (In Progress)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="pDesc">وصف موجز للمشروع:</label>
+        <textarea id="pDesc" rows="3" placeholder="اكتب تفاصيل موجزة عن البناء، المواد المستخدمة، والمساحة..."></textarea>
+      </div>
+
+      <button class="btn-action" onclick="generateCode()">⚡ توليد كود الكائن الإنشائي</button>
+
+      <div style="margin-top:20px; font-size:0.8rem; color:var(--text-muted);">
+        الكود المولد (أرسله لي لأضيفه لك فوراً في قاعدة بيانات الموقع):
+      </div>
+      <pre class="code-output" id="codeOutput">// الكود سيظهر هنا عند التحديد والنقر على توليد...</pre>
+    </div>
+
+  </div>
+
+  <script>
+    const imagesCount = 38;
+    const grid = document.getElementById('galleryGrid');
+    let selectedImages = [];
+
+    // Populate media cards
+    for (let i = 1; i <= imagesCount; i++) {
+      const card = document.createElement('div');
+      card.className = 'media-card';
+      card.dataset.num = i;
+      card.onclick = () => toggleSelect(card, i);
+
+      card.innerHTML = `
+        <img src="new_projects/new_proj_${i}.jpeg" alt="صورة ${i}" loading="lazy">
+        <div class="card-info">
+          <span class="card-name">new_proj_${i}.jpeg</span>
+          <div class="select-indicator">✓</div>
+        </div>
+      `;
+      grid.appendChild(tr = card);
+    }
+
+    // Add video card at the end
+    const vCard = document.createElement('div');
+    vCard.className = 'media-card';
+    vCard.dataset.type = 'video';
+    vCard.onclick = () => toggleVideoSelect(vCard);
+    vCard.innerHTML = `
+      <video src="new_projects/new_video_1.mp4" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
+      <div class="card-info">
+        <span class="card-name" style="color: #92C6FF;">فيديو (مرر لتشغيل)</span>
+        <div class="select-indicator">✓</div>
+      </div>
+    `;
+    grid.appendChild(vCard);
+
+    let isVideoSelected = false;
+
+    function toggleSelect(card, num) {
+      card.classList.toggle('selected');
+      const filename = `new_projects/new_proj_${num}.jpeg`;
+      if (card.classList.contains('selected')) {
+        selectedImages.push(filename);
+      } else {
+        selectedImages = selectedImages.filter(img => img !== filename);
+      }
+      updateStatus();
+    }
+
+    function toggleVideoSelect(card) {
+      card.classList.toggle('selected');
+      isVideoSelected = card.classList.contains('selected');
+      updateStatus();
+    }
+
+    function updateStatus() {
+      const el = document.getElementById('selectedCount');
+      let text = '';
+      if (selectedImages.length > 0) {
+        text += `${selectedImages.length} صورة`;
+      }
+      if (isVideoSelected) {
+        if (text) text += ' + ';
+        text += 'فيديو واحد';
+      }
+      el.value = text || 'لم يتم اختيار أي وسائط';
+    }
+
+    function generateCode() {
+      const title = document.getElementById('pTitle').value.trim() || 'مشروع جديد';
+      const type = document.getElementById('pType').value;
+      const status = document.getElementById('pStatus').value;
+      const desc = document.getElementById('pDesc').value.trim() || 'تم تنفيذ هذا المشروع بأعلى معايير الإتقان والدقة الهندسية.';
+      
+      const typeLabelMap = {
+        'residential': 'RESIDENTIAL — ' + (status === 'منجز' ? 'COMPLETED' : 'IN PROGRESS'),
+        'commercial': 'COMMERCIAL — ' + (status === 'منجز' ? 'COMPLETED' : 'IN PROGRESS'),
+        'finishing': 'FINISHING — ' + (status === 'منجز' ? 'COMPLETED' : 'IN PROGRESS'),
+        'other': 'CONSTRUCTION — ' + (status === 'منجز' ? 'COMPLETED' : 'IN PROGRESS')
+      };
+
+      const catLabelMap = {
+        'residential': 'سكني',
+        'commercial': 'تجاري',
+        'finishing': 'تشطيب وترميم',
+        'other': 'أعمال أخرى'
+      };
+
+      if (selectedImages.length === 0) {
+        alert('من فضلك اختر صورة واحدة على الأقل كصورة رئيسية للمشروع');
+        return;
+      }
+
+      // Generate object
+      const obj = {
+        image: selectedImages[0],
+        type: typeLabelMap[type],
+        title: title,
+        location: 'الرياض، المملكة العربية السعودية',
+        status: status,
+        category: catLabelMap[type],
+        desc: desc,
+        gallery: selectedImages
+      };
+
+      document.getElementById('codeOutput').textContent = JSON.stringify(obj, null, 2);
+    }
+  </script>
+
+</body>
+</html>
