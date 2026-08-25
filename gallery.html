@@ -233,6 +233,32 @@
       .gallery-container { padding: 0 20px 60px 20px; }
       .intro h1 { font-size: 1.8rem; }
     }
+
+    /* ── LOAD MORE BUTTON ── */
+    .btn-load-more {
+      margin-top: 36px;
+      padding: 12px 36px;
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-family: var(--font-ar);
+      font-size: 0.92rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: none; /* Controlled by JS */
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .btn-load-more:hover {
+      background: var(--gold);
+      color: var(--bg-dark);
+      box-shadow: 0 4px 20px rgba(199, 154, 59, 0.25);
+    }
   </style>
 </head>
 <body>
@@ -266,6 +292,7 @@
     <div class="gallery-grid" id="galleryGrid">
       <!-- Generated via JS -->
     </div>
+    <button id="loadMoreBtn" class="btn-load-more" onclick="loadMore()">🔗 تحميل المزيد من الأعمال والمشاريع</button>
   </div>
 
   <div class="lightbox" id="lightbox">
@@ -342,19 +369,24 @@
 
     let filteredItems = [...mediaItems];
     let currentIndex = 0;
+    let itemsToShow = 12; // Start with 12 items
 
     function renderGallery(items) {
       const grid = document.getElementById('galleryGrid');
       grid.innerHTML = '';
 
-      items.forEach((item, index) => {
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      const visibleItems = items.slice(0, itemsToShow);
+
+      visibleItems.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'gallery-item';
-        div.onclick = () => openLightbox(index);
+        div.onclick = () => openLightbox(index); // Index corresponds to filteredItems absolute index
 
         let mediaElement = '';
         if (item.type === 'video') {
-          mediaElement = `<video src="${item.src}" muted preload="metadata"></video>
+          // Changed preload to "none" to save bandwidth and load instantly
+          mediaElement = `<video src="${item.src}" muted preload="none"></video>
                           <div class="video-badge">▶</div>`;
         } else {
           mediaElement = `<img src="${item.src}" alt="${item.title}" loading="lazy">`;
@@ -369,13 +401,30 @@
         `;
         grid.appendChild(div);
       });
+
+      // Show/hide load more button
+      if (items.length > itemsToShow) {
+        loadMoreBtn.style.display = 'inline-flex';
+      } else {
+        loadMoreBtn.style.display = 'none';
+      }
     }
+
+    function loadMore() {
+      itemsToShow += 12; // Load 12 more items
+      renderGallery(filteredItems);
+    }
+    window.loadMore = loadMore;
 
     function filterGallery(category) {
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
       });
-      event.target.classList.add('active');
+      if (event && event.target) {
+        event.target.classList.add('active');
+      }
+
+      itemsToShow = 12; // Reset pagination count on filter change
 
       if (category === 'all') {
         filteredItems = [...mediaItems];
